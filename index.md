@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: default
 title: Home
 ---
 
@@ -9,4 +9,12 @@ This is a simple blog site hosted on GitHub Pages.
 
 ## Recent Posts
 
-* [My First Post](posts/2023-10-27-my-first-post.md)
+<ul class="post-list">
+  {% for post in site.posts %}
+    <li>
+      <span class="post-date">{{ post.date | date: "%b %-d, %Y" }}</span>
+      <a class="post-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
+      <div class="post-excerpt">{{ post.excerpt }}</div>
+    </li>
+  {% endfor %}
+</ul>
