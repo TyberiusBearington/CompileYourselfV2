@@ -3,9 +3,9 @@ layout: default
 title: Home
 ---
 
-# Welcome to My Blog
+# Compile Yourself
 
-This is a simple blog site hosted on GitHub Pages.
+Its never too late to compile yourself. Find the time to get your version 2 out there.
 
 ## Recent Posts
 
