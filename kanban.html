@@ -1,0 +1,144 @@
+---
+layout: default
+title: Kanban Board
+---
+
+<style>
+  .kanban-board {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+  }
+
+  .kanban-column {
+    flex: 1;
+    min-width: 250px;
+    background-color: #f4f5f7;
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .kanban-column h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #333;
+  }
+
+  .kanban-card {
+    background-color: white;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    cursor: grab;
+  }
+
+  .kanban-card:active {
+    cursor: grabbing;
+  }
+
+  .add-card-btn {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    background-color: transparent;
+    border: none;
+    color: #5e6c84;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .add-card-btn:hover {
+    background-color: rgba(9, 30, 66, 0.08);
+    color: #172b4d;
+  }
+</style>
+
+<h1>Project Kanban Board</h1>
+
+<div class="kanban-board">
+  <div class="kanban-column" id="todo">
+    <h3>Not Started</h3>
+    <div class="card-list">
+      <!-- Cards will go here -->
+    </div>
+    <button class="add-card-btn" onclick="addCard('todo')">+ Add a card</button>
+  </div>
+
+  <div class="kanban-column" id="inprogress">
+    <h3>In Progress</h3>
+    <div class="card-list">
+      <!-- Cards will go here -->
+    </div>
+    <button class="add-card-btn" onclick="addCard('inprogress')">+ Add a card</button>
+  </div>
+
+  <div class="kanban-column" id="done">
+    <h3>Completed</h3>
+    <div class="card-list">
+      <!-- Cards will go here -->
+    </div>
+    <button class="add-card-btn" onclick="addCard('done')">+ Add a card</button>
+  </div>
+</div>
+
+<script>
+  // Simple script to handle adding cards
+  // Note: Since this is a static site, changes won't persist after refresh
+  // unless we use LocalStorage or a backend. I'll use LocalStorage for now.
+
+  document.addEventListener('DOMContentLoaded', loadCards);
+
+  function addCard(columnId) {
+    const text = prompt("Enter card description:");
+    if (text) {
+      createCardElement(columnId, text);
+      saveCards();
+    }
+  }
+
+  function createCardElement(columnId, text) {
+    const column = document.getElementById(columnId).querySelector('.card-list');
+    const card = document.createElement('div');
+    card.className = 'kanban-card';
+    card.innerText = text;
+
+    // Add simple delete functionality on right click
+    card.oncontextmenu = function(e) {
+      e.preventDefault();
+      if(confirm("Delete this card?")) {
+        card.remove();
+        saveCards();
+      }
+    };
+
+    column.appendChild(card);
+  }
+
+  function saveCards() {
+    const data = {
+      todo: getColumnData('todo'),
+      inprogress: getColumnData('inprogress'),
+      done: getColumnData('done')
+    };
+    localStorage.setItem('kanban-data', JSON.stringify(data));
+  }
+
+  function getColumnData(columnId) {
+    const column = document.getElementById(columnId).querySelector('.card-list');
+    const cards = column.querySelectorAll('.kanban-card');
+    return Array.from(cards).map(card => card.innerText);
+  }
+
+  function loadCards() {
+    const data = JSON.parse(localStorage.getItem('kanban-data'));
+    if (data) {
+      data.todo.forEach(text => createCardElement('todo', text));
+      data.inprogress.forEach(text => createCardElement('inprogress', text));
+      data.done.forEach(text => createCardElement('done', text));
+    }
+  }
+</script>

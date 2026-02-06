@@ -1,3 +1,6 @@
 title: compileYourselfV2
 description: It takes a bit to compile, but never too long to recompile
 theme: jekyll-theme-cayman
+header_pages:
+  - index.md
+  - kanban.html
