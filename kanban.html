@@ -40,6 +40,7 @@ title: Kanban Board
     margin-bottom: 10px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     cursor: grab;
+    position: relative;
   }
 
   .kanban-card:active {
@@ -48,6 +49,32 @@ title: Kanban Board
 
   .kanban-card.dragging {
     opacity: 0.5;
+  }
+
+  .card-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+  }
+
+  .kanban-card:hover .card-actions {
+    display: block;
+  }
+
+  .card-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #888;
+    padding: 2px 5px;
+  }
+
+  .card-action-btn:hover {
+    color: #333;
+    background-color: #eee;
+    border-radius: 3px;
   }
 
   .add-card-btn {
@@ -112,11 +139,56 @@ title: Kanban Board
     const column = document.getElementById(columnId).querySelector('.card-list');
     const card = document.createElement('div');
     card.className = 'kanban-card';
-    card.innerText = text;
     card.draggable = true;
 
+    // Card content wrapper
+    const content = document.createElement('div');
+    content.className = 'card-content';
+    content.innerText = text;
+    card.appendChild(content);
+
+    // Action buttons container
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
+
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.className = 'card-action-btn';
+    editBtn.innerHTML = '&#9998;'; // Pencil icon
+    editBtn.title = 'Edit';
+    editBtn.onclick = function(e) {
+      e.stopPropagation(); // Prevent drag start
+      const newText = prompt("Edit card:", content.innerText);
+      if (newText !== null && newText.trim() !== "") {
+        content.innerText = newText;
+        saveCards();
+      }
+    };
+    actions.appendChild(editBtn);
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'card-action-btn';
+    deleteBtn.innerHTML = '&times;'; // X icon
+    deleteBtn.title = 'Delete';
+    deleteBtn.onclick = function(e) {
+      e.stopPropagation(); // Prevent drag start
+      if(confirm("Delete this card?")) {
+        card.remove();
+        saveCards();
+      }
+    };
+    actions.appendChild(deleteBtn);
+
+    card.appendChild(actions);
+
     // Drag events
-    card.addEventListener('dragstart', () => {
+    card.addEventListener('dragstart', (e) => {
+      // Don't drag if clicking buttons
+      if (e.target.closest('.card-action-btn')) {
+        e.preventDefault();
+        return;
+      }
       card.classList.add('dragging');
     });
 
@@ -124,15 +196,6 @@ title: Kanban Board
       card.classList.remove('dragging');
       saveCards();
     });
-
-    // Add simple delete functionality on right click
-    card.oncontextmenu = function(e) {
-      e.preventDefault();
-      if(confirm("Delete this card?")) {
-        card.remove();
-        saveCards();
-      }
-    };
 
     column.appendChild(card);
   }
@@ -145,10 +208,12 @@ title: Kanban Board
     const afterElement = getDragAfterElement(container, e.clientY);
     const draggable = document.querySelector('.dragging');
 
-    if (afterElement == null) {
-      container.appendChild(draggable);
-    } else {
-      container.insertBefore(draggable, afterElement);
+    if (draggable) {
+        if (afterElement == null) {
+          container.appendChild(draggable);
+        } else {
+          container.insertBefore(draggable, afterElement);
+        }
     }
   }
 
@@ -179,7 +244,7 @@ title: Kanban Board
   function getColumnData(columnId) {
     const column = document.getElementById(columnId).querySelector('.card-list');
     const cards = column.querySelectorAll('.kanban-card');
-    return Array.from(cards).map(card => card.innerText);
+    return Array.from(cards).map(card => card.querySelector('.card-content').innerText);
   }
 
   function loadCards() {
