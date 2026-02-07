@@ -17,6 +17,8 @@ title: Kanban Board
     background-color: #f4f5f7;
     border-radius: 8px;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
   }
 
   .kanban-column h3 {
@@ -24,6 +26,11 @@ title: Kanban Board
     margin-bottom: 10px;
     text-align: center;
     color: #333;
+  }
+
+  .card-list {
+    flex-grow: 1;
+    min-height: 50px; /* Make sure empty lists are droppable */
   }
 
   .kanban-card {
@@ -39,6 +46,10 @@ title: Kanban Board
     cursor: grabbing;
   }
 
+  .kanban-card.dragging {
+    opacity: 0.5;
+  }
+
   .add-card-btn {
     display: block;
     width: 100%;
@@ -49,6 +60,7 @@ title: Kanban Board
     text-align: left;
     cursor: pointer;
     border-radius: 4px;
+    margin-top: auto;
   }
 
   .add-card-btn:hover {
@@ -62,7 +74,7 @@ title: Kanban Board
 <div class="kanban-board">
   <div class="kanban-column" id="todo">
     <h3>Not Started</h3>
-    <div class="card-list">
+    <div class="card-list" ondragover="handleDragOver(event)">
       <!-- Cards will go here -->
     </div>
     <button class="add-card-btn" onclick="addCard('todo')">+ Add a card</button>
@@ -70,7 +82,7 @@ title: Kanban Board
 
   <div class="kanban-column" id="inprogress">
     <h3>In Progress</h3>
-    <div class="card-list">
+    <div class="card-list" ondragover="handleDragOver(event)">
       <!-- Cards will go here -->
     </div>
     <button class="add-card-btn" onclick="addCard('inprogress')">+ Add a card</button>
@@ -78,7 +90,7 @@ title: Kanban Board
 
   <div class="kanban-column" id="done">
     <h3>Completed</h3>
-    <div class="card-list">
+    <div class="card-list" ondragover="handleDragOver(event)">
       <!-- Cards will go here -->
     </div>
     <button class="add-card-btn" onclick="addCard('done')">+ Add a card</button>
@@ -86,10 +98,6 @@ title: Kanban Board
 </div>
 
 <script>
-  // Simple script to handle adding cards
-  // Note: Since this is a static site, changes won't persist after refresh
-  // unless we use LocalStorage or a backend. I'll use LocalStorage for now.
-
   document.addEventListener('DOMContentLoaded', loadCards);
 
   function addCard(columnId) {
@@ -105,6 +113,17 @@ title: Kanban Board
     const card = document.createElement('div');
     card.className = 'kanban-card';
     card.innerText = text;
+    card.draggable = true;
+
+    // Drag events
+    card.addEventListener('dragstart', () => {
+      card.classList.add('dragging');
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      saveCards();
+    });
 
     // Add simple delete functionality on right click
     card.oncontextmenu = function(e) {
@@ -116,6 +135,36 @@ title: Kanban Board
     };
 
     column.appendChild(card);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    const container = e.target.closest('.card-list');
+    if (!container) return;
+
+    const afterElement = getDragAfterElement(container, e.clientY);
+    const draggable = document.querySelector('.dragging');
+
+    if (afterElement == null) {
+      container.appendChild(draggable);
+    } else {
+      container.insertBefore(draggable, afterElement);
+    }
+  }
+
+  // Helper to determine where to drop the element in the list
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.kanban-card:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
   }
 
   function saveCards() {
