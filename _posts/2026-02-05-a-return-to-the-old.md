@@ -4,7 +4,7 @@ title: A Blast of Nostalgia
 date: 2026-02-10
 ---
 
-# A Blast of Nostalgia
+# Refinding what was lost
 
 I have been trying to figure out exactly what I wanted to focus on as a set of side projects. I had a few ideas,
 but I believe that I have finally come to realize what I was hoping to do, bring back the freedom of the internet.
